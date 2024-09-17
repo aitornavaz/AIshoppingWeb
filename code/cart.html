@@ -1,0 +1,196 @@
+<!-- cart.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+
+    <!-- Add the link to the Bootstrap CSS file -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <style>
+        /* Add your custom styles here */
+        body {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .cart-icon {
+            font-size: 24px;
+            color: #007bff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+
+        .remove-button {
+            background-color: #dc3545;
+            color: #ffffff;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        .remove-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+
+</head>
+<body>
+
+     <!-- Barra de navegación -->
+     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Colores y Sueños</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Acerca de</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Servicios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contacto</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="mb-4">Shopping Cart</h1>
+
+        <!-- Display the artworks in the cart -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="cart-items"><!-- Cart items will be dynamically added here --></tbody>
+        </table>
+
+        <!-- Go Back button -->
+        <button class="btn btn-primary" onclick="goBack()">Go Back</button>
+        <!-- Add this button in your shopping cart page -->
+        <button class="btn btn-success" onclick="goToCheckout()">Proceed to Checkout</button>
+
+    </div>
+
+    <!-- Example script for removing items from the cart -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        // Function to go back to the main page
+        function goBack() {
+            window.location.href = 'mainPage.php';
+        }
+
+        // Function to fetch cart items and update HTML
+        function fetchCartItems() {
+        $.ajax({
+            url: 'cartData.php',
+            type: 'GET',
+            dataType: 'text', // Expecting plain text
+            success: function(data) {
+                // Check if the response is valid JSON
+                try {
+                    var jsonData = JSON.parse(data);
+
+                    // Clear existing items in the cart
+                    $('#cart-items').empty();
+
+                    if (jsonData.length > 0) {
+                        // Append new items to the cart
+                        $.each(jsonData, function(index, item) {
+                            $('#cart-items').append(`
+                                <tr>
+                                    <td>${item.ID}</td>
+                                    <td>${item.Nombre}</td>
+                                    <td>${item.Precio}</td>
+                                    <td>
+                                        <button class="remove-button" onclick="removeFromCart(${item.ID})">Remove</button>
+                                    </td>
+                                </tr>
+                            `);
+                        });
+                    }
+                } catch (e) {
+                    // Display the message from PHP if no items in the cart
+                    $('#cart-items').html(`
+                        <tr>
+                            <td colspan="4" class="text-center">${data}</td>
+                        </tr>
+                    `);
+                }
+            },
+            error: function() {
+                console.error('Error fetching cart items');
+            }
+        });
+    }
+    // Call the function to fetch and display cart items on page load
+        $(document).ready(function() {
+            fetchCartItems();
+        });
+
+        // Function to remove items from the cart
+        function removeFromCart(artworkID) {
+            // Send an AJAX request to remove the item from the cart
+            $.ajax({
+                url: 'removeFromCart.php', // Replace with the actual PHP script for removing from the cart
+                type: 'POST',
+                data: { id: artworkID },
+                success: function(response) {
+                    // Refresh the cart items after successful removal
+                    fetchCartItems();
+                    alert('Item removed from the cart.');
+                },
+                error: function() {
+                    console.error('Error removing item from the cart');
+                }
+            });
+        }
+        
+        // Add this function in your script tag or external JavaScript file
+        function goToCheckout() {
+            window.location.href = 'checkout.php';
+        }
+
+    </script>
+
+</body>
+</html>
